@@ -1,0 +1,173 @@
+{
+  "metadatos": {
+    "proyecto": "Horizonte Cooperativo",
+    "proposito": "Datos ficticios para un dashboard academico de caja de ahorro",
+    "moneda": "MXN",
+    "fechaCorte": "2026-09-25",
+    "estatusRegulatorio": "simulacion; no representa una SOCAP autorizada",
+    "notaIdentidad": "RFC, CURP y documentos de los ejemplos son ficticios y no deben usarse para tramites"
+  },
+  "clientes": [
+    {
+      "idCliente": "CLI-001",
+      "numeroSocio": "SOC-001",
+      "tipoPersona": "fisica",
+      "nombre": "Clara",
+      "apellidoPaterno": "Ejemplo",
+      "apellidoMaterno": "Ficticia",
+      "fechaNacimiento": "1990-01-01",
+      "nacionalidad": "mexicana",
+      "rfc": "DEMO900101AB1",
+      "curp": "DEMO900101HOCLRS08",
+      "telefono": "0000000000",
+      "correo": "cliente01@example.invalid",
+      "domicilio": {
+        "calle": "Calle Ficticia",
+        "numeroExterior": "1",
+        "numeroInterior": null,
+        "colonia": "Centro (simulacion)",
+        "municipio": "Oaxaca de Juarez",
+        "estado": "Oaxaca",
+        "codigoPostal": "68000",
+        "pais": "Mexico"
+      },
+      "identificacionOficial": {
+        "tipo": "INE (simulacion)",
+        "folio": "DOC-DEMO-001",
+        "fechaVencimiento": "2030-12-31"
+      },
+      "ocupacion": "comerciante (simulacion)",
+      "origenRecursos": "actividad economica (simulacion)",
+      "representanteLegal": null,
+      "beneficiarios": [],
+      "fechaAlta": "2026-09-01",
+      "estatus": "activo",
+      "verificacionIdentidad": "datos simulados"
+    },
+    {
+      "idCliente": "CLI-002",
+      "numeroSocio": "SOC-002",
+      "tipoPersona": "fisica",
+      "nombre": "Luis",
+      "apellidoPaterno": "Modelo",
+      "apellidoMaterno": "Prueba",
+      "fechaNacimiento": "1992-02-02",
+      "nacionalidad": "mexicana",
+      "rfc": "PRUE920202CD2",
+      "curp": "PRUE920202HOCLRN09",
+      "telefono": "0000000000",
+      "correo": "cliente02@example.invalid",
+      "domicilio": {
+        "calle": "Avenida Demostracion",
+        "numeroExterior": "2",
+        "numeroInterior": null,
+        "colonia": "Centro (simulacion)",
+        "municipio": "Oaxaca de Juarez",
+        "estado": "Oaxaca",
+        "codigoPostal": "68000",
+        "pais": "Mexico"
+      },
+      "identificacionOficial": {
+        "tipo": "INE (simulacion)",
+        "folio": "DOC-DEMO-002",
+        "fechaVencimiento": "2031-12-31"
+      },
+      "ocupacion": "empleado (simulacion)",
+      "origenRecursos": "salario (simulacion)",
+      "representanteLegal": null,
+      "beneficiarios": [],
+      "fechaAlta": "2026-09-05",
+      "estatus": "activo",
+      "verificacionIdentidad": "datos simulados"
+    }
+  ],
+  "productosAhorro": [
+    {
+      "idProducto": "AH-VISTA",
+      "nombre": "Ahorro a la vista",
+      "disponibilidad": "flexible",
+      "plazoDias": null
+    },
+    {
+      "idProducto": "AH-PLAZO",
+      "nombre": "Ahorro a plazo fijo",
+      "disponibilidad": "al vencimiento",
+      "plazoDias": 180
+    },
+    {
+      "idProducto": "AH-JUVENIL",
+      "nombre": "Ahorro infantil o juvenil",
+      "disponibilidad": "segun condiciones del producto",
+      "plazoDias": null
+    },
+    {
+      "idProducto": "AH-META",
+      "nombre": "Ahorro navideno o escolar",
+      "disponibilidad": "en fecha objetivo",
+      "plazoDias": null
+    }
+  ],
+  "cuentasAhorro": [
+    {
+      "idCuenta": "CTA-001",
+      "idCliente": "CLI-001",
+      "idProducto": "AH-VISTA",
+      "fechaApertura": "2026-09-02",
+      "fechaObjetivo": null,
+      "saldoMXN": 2500.00,
+      "estatus": "activa"
+    }
+  ],
+  "movimientosAhorro": [
+    {
+      "idMovimiento": "MOV-001",
+      "idCuenta": "CTA-001",
+      "fechaHora": "2026-09-02T10:00:00-06:00",
+      "tipo": "deposito",
+      "montoMXN": 2500.00,
+      "canal": "ventanilla",
+      "idUsuarioRegistro": "USR-001"
+    }
+  ],
+  "solicitudesCredito": [
+    {
+      "idSolicitud": "SOL-001",
+      "idCliente": "CLI-001",
+      "fechaSolicitud": "2026-09-20",
+      "montoSolicitadoMXN": 5000.00,
+      "plazoMeses": 6,
+      "estatus": "en_revision"
+    }
+  ],
+  "prestamos": [
+    {
+      "idPrestamo": "PRE-001",
+      "idCliente": "CLI-002",
+      "montoOriginalMXN": 10000.00,
+      "saldoPrincipalMXN": 8000.00,
+      "tasaAnualPorcentaje": 12.00,
+      "plazoMeses": 12,
+      "fechaOtorgamiento": "2026-09-10",
+      "estatus": "vigente"
+    }
+  ],
+  "pagosPrestamo": [
+    {
+      "idPago": "PAG-001",
+      "idPrestamo": "PRE-001",
+      "fechaHora": "2026-09-18T12:00:00-06:00",
+      "montoMXN": 2000.00,
+      "aplicadoACapitalMXN": 2000.00,
+      "aplicadoAInteresesMXN": 0.00,
+      "idUsuarioRegistro": "USR-001"
+    }
+  ],
+  "usuariosSistema": [
+    {
+      "idUsuario": "USR-001",
+      "alias": "Operador Demo",
+      "rol": "operador",
+      "estatus": "activo"
+    }
+  ]
+}

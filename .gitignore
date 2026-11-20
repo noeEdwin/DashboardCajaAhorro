@@ -1,0 +1,26 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Environment & Secrets
+.env
+*.local
+
+# Data (keep sample CSV, ignore large raw downloads)
+data/raw/*.csv
+!data/raw/sample_oaxaca_creditos.csv
+data/processed/*.csv
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
