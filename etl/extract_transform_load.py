@@ -146,7 +146,7 @@ def load_to_postgres(df: pd.DataFrame, source_name: str, total_raw: int) -> int:
     """Carga los registros transformados a PostgreSQL con upsert idempotente."""
     database_url = os.getenv(
         "DATABASE_URL",
-        "postgresql://horizonte:horizonte_pass@localhost:5432/caja_ahorro_oaxaca",
+        "postgresql://horizonte:horizonte_pass@localhost:5433/caja_ahorro_oaxaca",
     )
     engine = create_engine(database_url)
 
