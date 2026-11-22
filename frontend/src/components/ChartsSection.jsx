@@ -12,13 +12,33 @@ import {
   YAxis,
 } from "recharts";
 import { formatMXN, formatNum, formatPct, formatPeriodo } from "../utils/formatters";
-import { percentBarWidth } from "../utils/metrics";
+import { percentBarWidth, trendGenders } from "../utils/metrics";
+import useReducedMotion from "../utils/useReducedMotion";
+import ChartDataTable from "./ChartDataTable";
 
 const COLOR_MUJER = "#A21C58";
 const COLOR_HOMBRE = "#1D4E89";
+const COLOR_OTRO = "#0B6E5C";
 
 function getGenderColor(genero) {
-  return String(genero).toLowerCase() === "mujer" ? COLOR_MUJER : COLOR_HOMBRE;
+  const g = String(genero).toLowerCase();
+  if (g === "mujer") return COLOR_MUJER;
+  if (g === "hombre") return COLOR_HOMBRE;
+  return COLOR_OTRO;
+}
+
+function getGenderDash(genero) {
+  const g = String(genero).toLowerCase();
+  if (g === "hombre") return "6 3";
+  if (g === "mujer") return undefined;
+  return "2 3";
+}
+
+function getGenderLegend(genero) {
+  const g = String(genero).toLowerCase();
+  if (g === "mujer") return "continua";
+  if (g === "hombre") return "discontinua";
+  return "punteada";
 }
 
 function TendenciaTooltip({ active, payload, label }) {
@@ -82,8 +102,9 @@ export default function ChartsSection({
   generoSeleccionado,
   kpis,
 }) {
-  const showMujer = generoSeleccionado === "Todos" || generoSeleccionado === "Mujer";
-  const showHombre = generoSeleccionado === "Todos" || generoSeleccionado === "Hombre";
+  const reducedMotion = useReducedMotion();
+  const animate = !reducedMotion;
+  const seriesGeneros = trendGenders(tendencia);
 
   const porGeneroFiltrado =
     generoSeleccionado === "Todos"
@@ -92,6 +113,10 @@ export default function ChartsSection({
           (item) => item.genero.toLowerCase() === generoSeleccionado.toLowerCase()
         );
 
+  const totalTrabajadoresTabla = porGeneroFiltrado.reduce(
+    (acc, item) => acc + (Number(item.trabajadores) || 0),
+    0
+  );
   const totalCreditosTabla = porGeneroFiltrado.reduce(
     (acc, item) => acc + (Number(item.creditos) || 0),
     0
@@ -115,16 +140,20 @@ export default function ChartsSection({
             </p>
           </div>
           <div className="chart-legend-pills" aria-label="Leyenda de series">
-            {showMujer && (
-              <span className="legend-pill legend-pill--mujer">
-                <span className="legend-swatch" aria-hidden="true" /> Mujer (continua)
+            {seriesGeneros.map((gender) => (
+              <span
+                key={gender}
+                className={`legend-pill ${
+                  gender === "Mujer"
+                    ? "legend-pill--mujer"
+                    : gender === "Hombre"
+                    ? "legend-pill--hombre"
+                    : "legend-pill--otro"
+                }`}
+              >
+                <span className="legend-swatch" aria-hidden="true" /> {gender} ({getGenderLegend(gender)})
               </span>
-            )}
-            {showHombre && (
-              <span className="legend-pill legend-pill--hombre">
-                <span className="legend-swatch" aria-hidden="true" /> Hombre (discontinua)
-              </span>
-            )}
+            ))}
           </div>
         </div>
 
@@ -149,32 +178,41 @@ export default function ChartsSection({
               />
               <Tooltip content={<TendenciaTooltip />} />
               <Legend />
-              {showMujer && (
+              {seriesGeneros.map((gender) => (
                 <Line
+                  key={gender}
                   type="monotone"
-                  dataKey="Mujer"
-                  name="Mujer (MXN)"
-                  stroke={COLOR_MUJER}
+                  dataKey={gender}
+                  name={`${gender} (MXN)`}
+                  stroke={getGenderColor(gender)}
                   strokeWidth={2.75}
-                  dot={{ r: 3.5, fill: COLOR_MUJER }}
+                  strokeDasharray={getGenderDash(gender)}
+                  dot={{ r: 3.5, fill: getGenderColor(gender) }}
                   activeDot={{ r: 6 }}
+                  isAnimationActive={animate}
                 />
-              )}
-              {showHombre && (
-                <Line
-                  type="monotone"
-                  dataKey="Hombre"
-                  name="Hombre (MXN)"
-                  stroke={COLOR_HOMBRE}
-                  strokeWidth={2.75}
-                  strokeDasharray="6 3"
-                  dot={{ r: 3.5, fill: COLOR_HOMBRE }}
-                  activeDot={{ r: 6 }}
-                />
-              )}
+              ))}
             </LineChart>
           </ResponsiveContainer>
         </div>
+
+        <ChartDataTable
+          title="Datos de la tendencia mensual de colocación en Oaxaca"
+          columns={[
+            "Periodo",
+            ...seriesGeneros.flatMap((gender) => [
+              `${gender} (MXN)`,
+              `Créditos ${gender.toLowerCase()}`,
+            ]),
+          ]}
+          rows={tendencia.map((row) => [
+            formatPeriodo(row.periodo),
+            ...seriesGeneros.flatMap((gender) => [
+              row[gender] == null ? "—" : formatMXN(row[gender], 2),
+              row[`${gender}_creditos`] == null ? "—" : formatNum(row[`${gender}_creditos`]),
+            ]),
+          ])}
+        />
       </article>
 
       <div className="charts-grid">
@@ -207,6 +245,7 @@ export default function ChartsSection({
                   name="Monto ejercido (MXN)"
                   radius={[6, 6, 0, 0]}
                   maxBarSize={80}
+                  isAnimationActive={animate}
                 >
                   {porGeneroFiltrado.map((entry) => (
                     <Cell
@@ -218,6 +257,17 @@ export default function ChartsSection({
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          <ChartDataTable
+            title="Datos de monto ejercido por género en Oaxaca"
+            columns={["Género", "Monto ejercido (MXN)", "Créditos", "Trabajadores"]}
+            rows={porGeneroFiltrado.map((row) => [
+              row.genero,
+              formatMXN(row.monto_mxn, 2),
+              formatNum(row.creditos),
+              formatNum(row.trabajadores),
+            ])}
+          />
         </article>
 
         <article id="brecha-ticket" className="chart-card">
@@ -255,6 +305,7 @@ export default function ChartsSection({
                   name="Ticket promedio (MXN)"
                   radius={[0, 6, 6, 0]}
                   maxBarSize={40}
+                  isAnimationActive={animate}
                 >
                   {porGeneroFiltrado.map((entry) => (
                     <Cell
@@ -266,6 +317,16 @@ export default function ChartsSection({
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          <ChartDataTable
+            title="Datos de ticket promedio por género en Oaxaca"
+            columns={["Género", "Ticket promedio (MXN)", "Créditos"]}
+            rows={porGeneroFiltrado.map((row) => [
+              row.genero,
+              formatMXN(row.ticket_promedio_mxn, 2),
+              formatNum(row.creditos),
+            ])}
+          />
 
           {kpis && (
             <div className="national-share-box">
@@ -348,7 +409,7 @@ export default function ChartsSection({
                 <tfoot>
                   <tr>
                     <td><strong>Total Oaxaca</strong></td>
-                    <td className="num"><strong>{formatNum(totalCreditosTabla)}</strong></td>
+                    <td className="num"><strong>{formatNum(totalTrabajadoresTabla)}</strong></td>
                     <td className="num"><strong>{formatNum(totalCreditosTabla)}</strong></td>
                     <td className="num"><strong>{formatMXN(totalMontoTabla, 2)}</strong></td>
                     <td className="num">
