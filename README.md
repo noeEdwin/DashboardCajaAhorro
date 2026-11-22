@@ -22,11 +22,11 @@ Proyecto de la asignatura **Desarrollo de Software para la Toma de Decisiones** 
 1. **Total de Créditos Ejercidos (Oaxaca):** Conteo acumulado de créditos y trabajadores.
 2. **Monto Total Financiado (MXN):** Importe total ejercido en Oaxaca.
 3. **Ticket Promedio por Crédito:** `monto_total_mxn / total_creditos`.
-4. **Participación por Género (%):** Distribución porcentual Mujeres vs. Hombres.
+4. **Participación por Género (%):** Distribución de créditos Mujeres vs. Hombres, con barra de participación.
 5. **Brecha de Ticket por Género (MXN):** Diferencia de monto promedio entre hombres y mujeres.
-6. **Crecimiento Periodo vs. Periodo (%):** Variación interanual de colocación en Oaxaca.
-7. **Participación Oaxaca vs. Nacional (%):** Peso de Oaxaca respecto al total nacional.
-8. **Tendencia Mensual de Colocación:** Serie temporal por género.
+6. **Crecimiento Periodo vs. Periodo (%):** Variación interanual en Oaxaca.
+7. **Participación Oaxaca / Nacional (%):** Peso sobre el importe total nacional.
+8. **Último Periodo Registrado:** Importe ejercido del último periodo registrado en Oaxaca (MXN) y su número de créditos.
 
 ---
 

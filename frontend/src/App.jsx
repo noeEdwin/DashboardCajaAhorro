@@ -1,27 +1,37 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Sidebar from "./components/Sidebar";
+import FilterBar from "./components/FilterBar";
+import KpiCard from "./components/KpiCard";
+import ChartsSection from "./components/ChartsSection";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  EmptyState,
+  ErrorBanner,
+  LoadingSkeleton,
+} from "./components/StateFeedback";
+import { getSampleDashboardData, SAMPLE_FILTROS } from "./data/sampleDemoData";
+import { formatMXN, formatNum, formatPct, formatPeriodo } from "./utils/formatters";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const formatMXN = (val) =>
-  new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-    maximumFractionDigits: 0,
-  }).format(val || 0);
-
-const formatNum = (val) => new Intl.NumberFormat("es-MX").format(val || 0);
+function buildTendenciaSeries(rows) {
+  const byPeriod = {};
+  (rows || []).forEach((row) => {
+    if (!byPeriod[row.periodo]) {
+      byPeriod[row.periodo] = {
+        periodo: row.periodo,
+        Mujer: 0,
+        Hombre: 0,
+        Mujer_creditos: 0,
+        Hombre_creditos: 0,
+      };
+    }
+    byPeriod[row.periodo][row.genero] = Number(row.monto_mxn) || 0;
+    byPeriod[row.periodo][`${row.genero}_creditos`] = Number(row.creditos) || 0;
+  });
+  return Object.values(byPeriod).sort((a, b) =>
+    a.periodo.localeCompare(b.periodo)
+  );
+}
 
 export default function App() {
   const [anio, setAnio] = useState("");
@@ -30,163 +40,295 @@ export default function App() {
   const [kpis, setKpis] = useState(null);
   const [porGenero, setPorGenero] = useState([]);
   const [tendencia, setTendencia] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [activeSection, setActiveSection] = useState("resumen");
 
   useEffect(() => {
-    fetch(`${API_URL}/api/filtros`)
-      .then((res) => res.json())
-      .then((data) => setFiltros(data))
-      .catch(() => setError("No se pudo conectar con la API en " + API_URL));
-  }, []);
+    if (isDemoMode) {
+      setFiltros(SAMPLE_FILTROS);
+      return;
+    }
+
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/filtros`, { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        setFiltros({
+          anios: Array.isArray(data.anios) ? data.anios : [],
+          generos: Array.isArray(data.generos) ? data.generos : [],
+        });
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setFiltros({ anios: [], generos: [] });
+        setError(`No se pudo conectar con la API en ${API_URL}`);
+      });
+
+    return () => controller.abort();
+  }, [isDemoMode, retryCount]);
 
   useEffect(() => {
+    if (isDemoMode) {
+      const sample = getSampleDashboardData(anio, genero);
+      setKpis(sample.kpis);
+      setPorGenero(sample.porGenero);
+      setTendencia(buildTendenciaSeries(sample.tendenciaRows));
+      setLoading(false);
+      setError("");
+      return;
+    }
+
+    const controller = new AbortController();
     const params = new URLSearchParams();
     if (anio) params.append("anio", anio);
     if (genero && genero !== "Todos") params.append("genero", genero);
     const qs = params.toString() ? `?${params.toString()}` : "";
 
+    setLoading(true);
+    setError("");
+
     Promise.all([
-      fetch(`${API_URL}/api/kpis${qs}`).then((r) => r.json()),
-      fetch(`${API_URL}/api/genero${anio ? `?anio=${anio}` : ""}`).then((r) => r.json()),
-      fetch(`${API_URL}/api/tendencia${qs}`).then((r) => r.json()),
+      fetch(`${API_URL}/api/kpis${qs}`, { signal: controller.signal }).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }),
+      fetch(`${API_URL}/api/genero${anio ? `?anio=${anio}` : ""}`, {
+        signal: controller.signal,
+      }).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }),
+      fetch(`${API_URL}/api/tendencia${qs}`, { signal: controller.signal }).then(
+        (r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        }
+      ),
     ])
       .then(([kpiRes, genRes, tendRes]) => {
-        setKpis(kpiRes.kpis);
+        setKpis(kpiRes.kpis || null);
         setPorGenero(genRes.data || []);
-
-        const byPeriod = {};
-        (tendRes.data || []).forEach((row) => {
-          if (!byPeriod[row.periodo]) {
-            byPeriod[row.periodo] = { periodo: row.periodo, Mujer: 0, Hombre: 0 };
-          }
-          byPeriod[row.periodo][row.genero] = Number(row.monto_mxn);
-        });
-        setTendencia(Object.values(byPeriod));
+        setTendencia(buildTendenciaSeries(tendRes.data));
         setError("");
       })
-      .catch(() => setError("Error al cargar métricas desde FastAPI."));
-  }, [anio, genero]);
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setKpis(null);
+        setPorGenero([]);
+        setTendencia([]);
+        setError("Error al cargar métricas desde FastAPI.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [anio, genero, isDemoMode, retryCount]);
+
+  const handleResetFilters = useCallback(() => {
+    setAnio("");
+    setGenero("Todos");
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    setIsDemoMode(false);
+    setError("");
+    setRetryCount((c) => c + 1);
+  }, []);
+
+  const handleLoadDemo = useCallback(() => {
+    setIsDemoMode(true);
+    setError("");
+  }, []);
+
+  const ultimoPeriodo = useMemo(() => {
+    if (!tendencia.length) return null;
+    const last = tendencia[tendencia.length - 1];
+    const totalMonto =
+      (genero === "Hombre" ? 0 : Number(last.Mujer) || 0) +
+      (genero === "Mujer" ? 0 : Number(last.Hombre) || 0);
+    const totalCreditos =
+      (genero === "Hombre" ? 0 : Number(last.Mujer_creditos) || 0) +
+      (genero === "Mujer" ? 0 : Number(last.Hombre_creditos) || 0);
+    return {
+      periodo: last.periodo,
+      monto: totalMonto,
+      creditos: totalCreditos,
+    };
+  }, [tendencia, genero]);
+
+  const isEmpty =
+    !loading &&
+    !error &&
+    kpis &&
+    Number(kpis.total_creditos) === 0 &&
+    tendencia.length === 0;
+
+  const crecimientoVal = kpis ? Number(kpis.crecimiento_periodo_pct) || 0 : 0;
+  const crecimientoTone =
+    crecimientoVal > 0 ? "positive" : crecimientoVal < 0 ? "alert" : "neutral";
+  const crecimientoLabel =
+    crecimientoVal > 0 ? "Alza" : crecimientoVal < 0 ? "Baja" : "Estable";
+
+  const brechaVal = kpis ? Number(kpis.brecha_ticket_genero_mxn) || 0 : 0;
+  const brechaTexto =
+    brechaVal > 0
+      ? "Mayor en hombres"
+      : brechaVal < 0
+      ? "Mayor en mujeres"
+      : "Sin brecha";
 
   return (
     <div className="layout">
-      <aside className="sidebar">
-        <div className="brand">
-          <h1>Horizonte</h1>
-          <span>COOPERATIVO · OAXACA</span>
-        </div>
-        <nav>
-          <a className="active" href="#resumen">Resumen Gerencial</a>
-          <a href="#genero">Brecha de Género</a>
-          <a href="#tendencia">Tendencia Mensual</a>
-        </nav>
-        <div className="sidebar-footer">
-          <small>Fuente: datos.gob.mx (FONACOT)</small>
-          <small>Equipo Omadas · ITO TecNM</small>
-        </div>
-      </aside>
+      <a className="skip-link" href="#main-content">
+        Saltar al contenido principal
+      </a>
 
-      <main className="content">
-        <header className="topbar">
-          <div>
-            <h2>Dashboard Financiero — Créditos Ejercidos en Oaxaca</h2>
-            <p className="subtitle">Monitoreo de colocación, ticket promedio y participación por género</p>
-          </div>
-          <div className="filters">
-            <label>
-              Año:
-              <select value={anio} onChange={(e) => setAnio(e.target.value)}>
-                <option value="">Todos</option>
-                {filtros.anios.map((a) => (
-                  <option key={a} value={a}>{a}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Género:
-              <select value={genero} onChange={(e) => setGenero(e.target.value)}>
-                <option value="Todos">Todos</option>
-                {filtros.generos.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </header>
+      <Sidebar
+        activeSection={activeSection}
+        onSelectSection={setActiveSection}
+        isDemoMode={isDemoMode}
+      />
 
-        {error && <div className="alert-error">{error}</div>}
+      <main id="main-content" className="content" tabIndex={-1}>
+        <FilterBar
+          anio={anio}
+          genero={genero}
+          filtros={filtros}
+          loading={loading}
+          isDemoMode={isDemoMode}
+          onAnioChange={setAnio}
+          onGeneroChange={setGenero}
+          onResetFilters={handleResetFilters}
+        />
 
-        {kpis && (
-          <section id="resumen" className="kpi-grid">
-            <div className="kpi-card">
-              <span className="kpi-label">1. Créditos Ejercidos (Oaxaca)</span>
-              <strong className="kpi-value">{formatNum(kpis.total_creditos)}</strong>
-              <span className="kpi-sub">{formatNum(kpis.total_trabajadores)} trabajadores</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-label">2. Monto Total Financiado</span>
-              <strong className="kpi-value">{formatMXN(kpis.monto_total_mxn)}</strong>
-              <span className="kpi-sub">Importe acumulado MXN</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-label">3. Ticket Promedio</span>
-              <strong className="kpi-value">{formatMXN(kpis.ticket_promedio_mxn)}</strong>
-              <span className="kpi-sub">Monto promedio por crédito</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-label">4. Participación Mujeres / Hombres</span>
-              <strong className="kpi-value">
-                {kpis.participacion_mujeres_pct}% / {kpis.participacion_hombres_pct}%
-              </strong>
-              <span className="kpi-sub">Distribución de créditos</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-label">5. Brecha de Ticket por Género</span>
-              <strong className="kpi-value">{formatMXN(kpis.brecha_ticket_genero_mxn)}</strong>
-              <span className="kpi-sub">Diferencia promedio H vs. M</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-label">6. Crecimiento Anual Oaxaca</span>
-              <strong className="kpi-value">{kpis.crecimiento_periodo_pct}%</strong>
-              <span className="kpi-sub">Variación último año</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-label">7. Participación Oaxaca / Nacional</span>
-              <strong className="kpi-value">{kpis.participacion_oaxaca_nacional_pct}%</strong>
-              <span className="kpi-sub">Peso sobre el total nacional</span>
-            </div>
-          </section>
+        <ErrorBanner
+          message={error}
+          apiUrl={API_URL}
+          onRetry={handleRetry}
+          onLoadDemo={handleLoadDemo}
+          isDemoMode={isDemoMode}
+        />
+
+        {loading ? (
+          <LoadingSkeleton />
+        ) : isEmpty ? (
+          <EmptyState
+            anio={anio}
+            genero={genero}
+            onReset={handleResetFilters}
+          />
+        ) : (
+          kpis && (
+            <>
+              <section
+                id="resumen"
+                className="kpi-section"
+                aria-labelledby="heading-kpis"
+              >
+                <div className="section-header">
+                  <h3 id="heading-kpis">Resumen Ejecutivo — 8 KPIs Financieros</h3>
+                  <span className="section-meta">
+                    Filtro activo:{" "}
+                    <strong>{anio ? `Año ${anio}` : "Todos los años"}</strong> ·{" "}
+                    <strong>{genero}</strong>
+                  </span>
+                </div>
+
+                <div className="kpi-grid">
+                  <KpiCard
+                    index={1}
+                    title="Créditos Ejercidos (Oaxaca)"
+                    value={formatNum(kpis.total_creditos)}
+                    subtitle={`${formatNum(kpis.total_trabajadores)} trabajadores beneficiados`}
+                  />
+                  <KpiCard
+                    index={2}
+                    title="Monto Total Financiado"
+                    value={formatMXN(kpis.monto_total_mxn)}
+                    subtitle="Importe acumulado ejercido (MXN)"
+                  />
+                  <KpiCard
+                    index={3}
+                    title="Ticket Promedio por Crédito"
+                    value={formatMXN(kpis.ticket_promedio_mxn)}
+                    subtitle="Monto total / total de créditos"
+                  />
+                  <KpiCard
+                    index={4}
+                    title="Participación por Género"
+                    value={`${formatPct(kpis.participacion_mujeres_pct, 1)} / ${formatPct(
+                      kpis.participacion_hombres_pct,
+                      1
+                    )}`}
+                    subtitle="Mujeres vs. Hombres (% de créditos)"
+                    progressPct={Number(kpis.participacion_mujeres_pct) || 0}
+                    progressLabel="Porcentaje de participación de mujeres en créditos"
+                  />
+                  <KpiCard
+                    index={5}
+                    title="Brecha de Ticket por Género"
+                    value={formatMXN(Math.abs(brechaVal))}
+                    subtitle="Diferencia promedio Hombre vs. Mujer"
+                    badgeText={brechaTexto}
+                    badgeTone={brechaVal === 0 ? "neutral" : "info"}
+                  />
+                  <KpiCard
+                    index={6}
+                    title="Crecimiento Periodo vs. Periodo"
+                    value={formatPct(crecimientoVal)}
+                    subtitle="Variación interanual en Oaxaca"
+                    badgeText={crecimientoLabel}
+                    badgeTone={crecimientoTone}
+                  />
+                  <KpiCard
+                    index={7}
+                    title="Participación Oaxaca / Nacional"
+                    value={formatPct(kpis.participacion_oaxaca_nacional_pct)}
+                    subtitle="Peso sobre el importe total nacional"
+                  />
+                  <KpiCard
+                    index={8}
+                    title="Último Periodo Registrado"
+                    value={
+                      ultimoPeriodo ? formatMXN(ultimoPeriodo.monto) : "Sin datos"
+                    }
+                    subtitle={
+                      ultimoPeriodo
+                        ? `${formatPeriodo(ultimoPeriodo.periodo)} · ${formatNum(
+                            ultimoPeriodo.creditos
+                          )} créditos`
+                        : "Sin serie temporal disponible"
+                    }
+                  />
+                </div>
+              </section>
+
+              <ChartsSection
+                tendencia={tendencia}
+                porGenero={porGenero}
+                generoSeleccionado={genero}
+                kpis={kpis}
+              />
+            </>
+          )
         )}
 
-        <section className="charts-grid">
-          <div id="genero" className="chart-card">
-            <h3>Comparativa de Monto Ejercido por Género (Oaxaca)</h3>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={porGenero}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="genero" />
-                <YAxis tickFormatter={(v) => `$${(v / 1e6).toFixed(0)}M`} />
-                <Tooltip formatter={(val) => formatMXN(val)} />
-                <Legend />
-                <Bar dataKey="monto_mxn" name="Monto Ejercido (MXN)" fill="#1d4ed8" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div id="tendencia" className="chart-card">
-            <h3>8. Tendencia Mensual de Colocación en Oaxaca</h3>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={tendencia}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="periodo" />
-                <YAxis tickFormatter={(v) => `$${(v / 1e6).toFixed(0)}M`} />
-                <Tooltip formatter={(val) => formatMXN(val)} />
-                <Legend />
-                <Line type="monotone" dataKey="Mujer" stroke="#db2777" strokeWidth={2.5} />
-                <Line type="monotone" dataKey="Hombre" stroke="#1d4ed8" strokeWidth={2.5} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
+        <footer className="dashboard-footer">
+          <p>
+            <strong>Horizonte Cooperativo — Oaxaca</strong> · Fuente:
+            datos.gob.mx (FONACOT).{" "}
+            {isDemoMode
+              ? "Modo demostración activo con datos de ejemplo (sample_oaxaca_creditos.csv)."
+              : "Datos consultados desde la API REST FastAPI / PostgreSQL."}
+          </p>
+        </footer>
       </main>
     </div>
   );
