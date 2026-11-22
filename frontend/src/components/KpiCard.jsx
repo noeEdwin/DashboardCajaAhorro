@@ -1,3 +1,5 @@
+import { percentBarWidth } from "../utils/metrics";
+
 export default function KpiCard({
   index,
   title,
@@ -10,7 +12,7 @@ export default function KpiCard({
 }) {
   const clampedPct =
     typeof progressPct === "number"
-      ? Math.max(0, Math.min(100, progressPct))
+      ? percentBarWidth(progressPct)
       : null;
 
   return (
