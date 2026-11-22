@@ -24,7 +24,7 @@ Proyecto de la asignatura **Desarrollo de Software para la Toma de Decisiones** 
 3. **Ticket Promedio por Crédito:** `monto_total_mxn / total_creditos`.
 4. **Participación por Género (%):** Distribución de créditos Mujeres vs. Hombres, con barra de participación.
 5. **Brecha de Ticket por Género (MXN):** Diferencia de monto promedio entre hombres y mujeres.
-6. **Crecimiento Periodo vs. Periodo (%):** Variación interanual en Oaxaca.
+6. **Crecimiento Periodo vs. Periodo (%):** Variación trimestral (ej. 4T vs. 3T 2025) o interanual en Oaxaca respetando filtros activos.
 7. **Participación Oaxaca / Nacional (%):** Peso sobre el importe total nacional.
 8. **Último Periodo Registrado:** Importe ejercido del último periodo registrado en Oaxaca (MXN) y su número de créditos.
 
@@ -50,13 +50,14 @@ docker compose up -d
 ```
 
 ### 2. Ejecutar el proceso ETL (Python)
-Descarga el CSV oficial de [datos.gob.mx (FONACOT)](https://www.datos.gob.mx/dataset/trabajadores_credito_ejercido_genero_entidad_federativa) en `data/raw/` o usa el archivo de ejemplo incluido:
+Los 8 CSV oficiales de [datos.gob.mx (FONACOT 2025, 1T–4T)](https://www.datos.gob.mx/dataset/trabajadores_credito_ejercido_genero_entidad_federativa) ya están incluidos en `data/raw/`:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r etl/requirements.txt
-python etl/extract_transform_load.py --input data/raw/sample_oaxaca_creditos.csv
+python etl/extract_transform_load.py --fonacot-dir data/raw
 ```
+*(Opcional: para cargar un CSV en formato largo de ejemplo usa `--input data/raw/sample_oaxaca_creditos.csv`.)*
 
 ### 3. Levantar el Backend (FastAPI)
 ```bash

@@ -15,9 +15,10 @@ frontend/.vite/
 .env
 *.local
 
-# Data (keep sample CSV, ignore large raw downloads)
+# Data (keep official FONACOT 2025 CSVs and sample CSV, ignore other large raw downloads)
 data/raw/*.csv
 !data/raw/sample_oaxaca_creditos.csv
+!data/raw/fonacot_*.csv
 data/processed/*.csv
 
 # OS / IDE

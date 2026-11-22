@@ -1,6 +1,6 @@
 """
 API REST FastAPI - Dashboard Caja de Ahorro (Enfoque Oaxaca).
-Expone los 8 KPIs financieros y desgloses por género y periodo.
+Expone los 8 KPIs financieros y desgloses por género, trimestre y periodo.
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from .db import engine
 
 app = FastAPI(
     title="Horizonte Cooperativo API - Oaxaca",
-    description="API de KPIs financieros de créditos ejercidos por género en Oaxaca.",
-    version="1.0.0",
+    description="API de KPIs financieros de créditos ejercidos por género en Oaxaca (FONACOT 2025).",
+    version="1.1.0",
 )
 
 app.add_middleware(
@@ -28,16 +28,30 @@ app.add_middleware(
 )
 
 
-def _build_filters(anio: Optional[int], genero: Optional[str]) -> tuple[str, dict]:
-    clauses = ["es_oaxaca = TRUE"]
+def _build_filters(
+    anio: Optional[int],
+    genero: Optional[str],
+    *,
+    only_oaxaca: bool = True,
+    entidad: Optional[str] = None,
+) -> tuple[str, dict]:
+    clauses: list[str] = []
     params: dict = {}
+
+    if only_oaxaca:
+        clauses.append("es_oaxaca = TRUE")
+    elif entidad:
+        clauses.append("entidad_federativa = :entidad")
+        params["entidad"] = entidad
+
     if anio is not None:
         clauses.append("anio = :anio")
         params["anio"] = anio
     if genero and genero.lower() != "todos":
         clauses.append("LOWER(genero) = LOWER(:genero)")
         params["genero"] = genero
-    return " AND ".join(clauses), params
+
+    return (" AND ".join(clauses) if clauses else "TRUE"), params
 
 
 @app.get("/health")
@@ -53,13 +67,19 @@ def get_filtros() -> dict:
         anios = [
             row[0]
             for row in conn.execute(
-                text("SELECT DISTINCT anio FROM creditos_entidad_genero WHERE es_oaxaca = TRUE ORDER BY anio DESC")
+                text(
+                    "SELECT DISTINCT anio FROM creditos_entidad_genero "
+                    "WHERE es_oaxaca = TRUE ORDER BY anio DESC"
+                )
             )
         ]
         generos = [
             row[0]
             for row in conn.execute(
-                text("SELECT DISTINCT genero FROM creditos_entidad_genero WHERE es_oaxaca = TRUE ORDER BY genero")
+                text(
+                    "SELECT DISTINCT genero FROM creditos_entidad_genero "
+                    "WHERE es_oaxaca = TRUE ORDER BY genero"
+                )
             )
         ]
     return {"anios": anios, "generos": generos}
@@ -70,8 +90,11 @@ def get_kpis(
     anio: Optional[int] = Query(default=None),
     genero: Optional[str] = Query(default=None),
 ) -> dict:
-    """Calcula los 8 KPIs principales para Oaxaca."""
-    where_sql, params = _build_filters(anio, genero)
+    """Calcula los 8 KPIs principales para Oaxaca respetando los filtros activos."""
+    where_sql, params = _build_filters(anio, genero, only_oaxaca=True)
+    nac_where_sql, nac_params = _build_filters(
+        anio, genero, only_oaxaca=False, entidad="Nacional"
+    )
 
     with engine.connect() as conn:
         totales = conn.execute(
@@ -103,29 +126,46 @@ def get_kpis(
             params,
         ).mappings().all()
 
-        # Crecimiento anual (último año vs año anterior en Oaxaca)
+        # Crecimiento periodo vs. periodo respetando filtros:
+        # - Si hay múltiples años en la selección, compara último año vs. año anterior.
+        # - Si los datos corresponden a un solo año (ej. FONACOT 2025), compara último trimestre vs. anterior.
         anual = conn.execute(
             text(
-                """
+                f"""
                 SELECT anio, SUM(importe_ejercido_mxn) AS monto
                 FROM creditos_entidad_genero
-                WHERE es_oaxaca = TRUE
+                WHERE {where_sql}
                 GROUP BY anio
                 ORDER BY anio DESC
                 LIMIT 2
                 """
-            )
+            ),
+            params,
         ).mappings().all()
 
-        # Participación Oaxaca vs Nacional
-        nac_where = "entidad_federativa = 'Nacional'" + (" AND anio = :anio" if anio is not None else "")
-        nac_params = {"anio": anio} if anio is not None else {}
+        trimestral = conn.execute(
+            text(
+                f"""
+                SELECT
+                    anio,
+                    CAST(CEIL(mes / 3.0) AS INTEGER) AS trimestre,
+                    SUM(importe_ejercido_mxn) AS monto
+                FROM creditos_entidad_genero
+                WHERE {where_sql}
+                GROUP BY anio, CAST(CEIL(mes / 3.0) AS INTEGER)
+                ORDER BY anio DESC, trimestre DESC
+                LIMIT 2
+                """
+            ),
+            params,
+        ).mappings().all()
+
         nacional_row = conn.execute(
             text(
                 f"""
                 SELECT COALESCE(SUM(importe_ejercido_mxn), 0) AS monto_nacional
                 FROM creditos_entidad_genero
-                WHERE {nac_where}
+                WHERE {nac_where_sql}
                 """
             ),
             nac_params,
@@ -144,18 +184,34 @@ def get_kpis(
     pct_mujeres = round((mujer_cred / total_creditos) * 100, 2) if total_creditos > 0 else 0.0
     pct_hombres = round((hombre_cred / total_creditos) * 100, 2) if total_creditos > 0 else 0.0
 
-    ticket_mujer = round(mujer_monto / mujer_cred, 2) if mujer_cred > 0 else 0.0
-    ticket_hombre = round(hombre_monto / hombre_cred, 2) if hombre_cred > 0 else 0.0
-    brecha_ticket_mxn = round(ticket_hombre - ticket_mujer, 2)
+    # Brecha de ticket por género: solo aplica si ambos géneros tienen créditos en la selección
+    if mujer_cred > 0 and hombre_cred > 0:
+        ticket_mujer = round(mujer_monto / mujer_cred, 2)
+        ticket_hombre = round(hombre_monto / hombre_cred, 2)
+        brecha_ticket_mxn: Optional[float] = round(ticket_hombre - ticket_mujer, 2)
+    else:
+        brecha_ticket_mxn = None
 
     crecimiento_pct = 0.0
+    crecimiento_detalle = "Sin periodo previo para comparar"
     if len(anual) == 2 and float(anual[1]["monto"]) > 0:
         actual = float(anual[0]["monto"])
         anterior = float(anual[1]["monto"])
         crecimiento_pct = round(((actual - anterior) / anterior) * 100, 2)
+        crecimiento_detalle = f"Interanual: {anual[0]['anio']} vs. {anual[1]['anio']}"
+    elif len(trimestral) == 2 and float(trimestral[1]["monto"]) > 0:
+        actual = float(trimestral[0]["monto"])
+        anterior = float(trimestral[1]["monto"])
+        crecimiento_pct = round(((actual - anterior) / anterior) * 100, 2)
+        crecimiento_detalle = (
+            f"Trimestral: {trimestral[0]['trimestre']}T {trimestral[0]['anio']} "
+            f"vs. {trimestral[1]['trimestre']}T {trimestral[1]['anio']}"
+        )
 
     monto_nacional = float(nacional_row["monto_nacional"])
-    participacion_nacional_pct = round((monto_total / monto_nacional) * 100, 2) if monto_nacional > 0 else 0.0
+    participacion_nacional_pct = (
+        round((monto_total / monto_nacional) * 100, 2) if monto_nacional > 0 else 0.0
+    )
 
     return {
         "kpis": {
@@ -167,6 +223,7 @@ def get_kpis(
             "participacion_hombres_pct": pct_hombres,
             "brecha_ticket_genero_mxn": brecha_ticket_mxn,
             "crecimiento_periodo_pct": crecimiento_pct,
+            "crecimiento_detalle": crecimiento_detalle,
             "participacion_oaxaca_nacional_pct": participacion_nacional_pct,
         }
     }
@@ -174,7 +231,7 @@ def get_kpis(
 
 @app.get("/api/genero")
 def get_por_genero(anio: Optional[int] = Query(default=None)) -> dict:
-    where_sql, params = _build_filters(anio, None)
+    where_sql, params = _build_filters(anio, None, only_oaxaca=True)
     with engine.connect() as conn:
         rows = conn.execute(
             text(
@@ -204,7 +261,7 @@ def get_tendencia(
     anio: Optional[int] = Query(default=None),
     genero: Optional[str] = Query(default=None),
 ) -> dict:
-    where_sql, params = _build_filters(anio, genero)
+    where_sql, params = _build_filters(anio, genero, only_oaxaca=True)
     with engine.connect() as conn:
         rows = conn.execute(
             text(
@@ -225,3 +282,62 @@ def get_tendencia(
             params,
         ).mappings().all()
     return {"data": [dict(r) for r in rows]}
+
+
+@app.get("/api/comparativa-nacional")
+def get_comparativa_nacional(
+    anio: Optional[int] = Query(default=None),
+    genero: Optional[str] = Query(default=None),
+) -> dict:
+    """Compara el volumen y ticket promedio de Oaxaca frente al total Nacional."""
+    oax_where, oax_params = _build_filters(anio, genero, only_oaxaca=True)
+    nac_where, nac_params = _build_filters(
+        anio, genero, only_oaxaca=False, entidad="Nacional"
+    )
+
+    with engine.connect() as conn:
+        oax = conn.execute(
+            text(
+                f"""
+                SELECT
+                    COALESCE(SUM(numero_creditos), 0) AS creditos,
+                    COALESCE(SUM(importe_ejercido_mxn), 0) AS monto_mxn
+                FROM creditos_entidad_genero
+                WHERE {oax_where}
+                """
+            ),
+            oax_params,
+        ).mappings().one()
+
+        nac = conn.execute(
+            text(
+                f"""
+                SELECT
+                    COALESCE(SUM(numero_creditos), 0) AS creditos,
+                    COALESCE(SUM(importe_ejercido_mxn), 0) AS monto_mxn
+                FROM creditos_entidad_genero
+                WHERE {nac_where}
+                """
+            ),
+            nac_params,
+        ).mappings().one()
+
+    oax_cred = int(oax["creditos"])
+    oax_monto = float(oax["monto_mxn"])
+    nac_cred = int(nac["creditos"])
+    nac_monto = float(nac["monto_mxn"])
+
+    return {
+        "oaxaca": {
+            "creditos": oax_cred,
+            "monto_mxn": round(oax_monto, 2),
+            "ticket_promedio_mxn": round(oax_monto / oax_cred, 2) if oax_cred > 0 else 0.0,
+        },
+        "nacional": {
+            "creditos": nac_cred,
+            "monto_mxn": round(nac_monto, 2),
+            "ticket_promedio_mxn": round(nac_monto / nac_cred, 2) if nac_cred > 0 else 0.0,
+        },
+        "participacion_creditos_pct": round((oax_cred / nac_cred) * 100, 2) if nac_cred > 0 else 0.0,
+        "participacion_monto_pct": round((oax_monto / nac_monto) * 100, 2) if nac_monto > 0 else 0.0,
+    }

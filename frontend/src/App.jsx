@@ -176,13 +176,18 @@ export default function App() {
   const crecimientoLabel =
     crecimientoVal > 0 ? "Alza" : crecimientoVal < 0 ? "Baja" : "Estable";
 
-  const brechaVal = kpis ? Number(kpis.brecha_ticket_genero_mxn) || 0 : 0;
-  const brechaTexto =
-    brechaVal > 0
-      ? "Mayor en hombres"
-      : brechaVal < 0
-      ? "Mayor en mujeres"
-      : "Sin brecha";
+  const brechaDisponible =
+    kpis &&
+    kpis.brecha_ticket_genero_mxn !== null &&
+    kpis.brecha_ticket_genero_mxn !== undefined;
+  const brechaVal = brechaDisponible ? Number(kpis.brecha_ticket_genero_mxn) || 0 : 0;
+  const brechaTexto = !brechaDisponible
+    ? "Requiere ambos géneros"
+    : brechaVal > 0
+    ? "Mayor en hombres"
+    : brechaVal < 0
+    ? "Mayor en mujeres"
+    : "Sin brecha";
 
   return (
     <div className="layout">
@@ -274,16 +279,20 @@ export default function App() {
                   <KpiCard
                     index={5}
                     title="Brecha de Ticket por Género"
-                    value={formatMXN(Math.abs(brechaVal))}
-                    subtitle="Diferencia promedio Hombre vs. Mujer"
+                    value={brechaDisponible ? formatMXN(Math.abs(brechaVal)) : "N/A"}
+                    subtitle={
+                      brechaDisponible
+                        ? "Diferencia promedio Hombre vs. Mujer"
+                        : "Selecciona 'Todos' en género para comparar"
+                    }
                     badgeText={brechaTexto}
-                    badgeTone={brechaVal === 0 ? "neutral" : "info"}
+                    badgeTone={!brechaDisponible || brechaVal === 0 ? "neutral" : "info"}
                   />
                   <KpiCard
                     index={6}
                     title="Crecimiento Periodo vs. Periodo"
                     value={formatPct(crecimientoVal)}
-                    subtitle="Variación interanual en Oaxaca"
+                    subtitle={kpis.crecimiento_detalle || "Variación trimestral en Oaxaca"}
                     badgeText={crecimientoLabel}
                     badgeTone={crecimientoTone}
                   />
