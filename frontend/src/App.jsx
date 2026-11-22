@@ -238,81 +238,86 @@ export default function App() {
                 aria-labelledby="heading-kpis"
               >
                 <div className="section-header">
-                  <h3 id="heading-kpis">Resumen Ejecutivo — 8 KPIs Financieros</h3>
+                  <h3 id="heading-kpis">Resumen ejecutivo de indicadores</h3>
                   <span className="section-meta">
-                    Filtro activo:{" "}
-                    <strong>{anio ? `Año ${anio}` : "Todos los años"}</strong> ·{" "}
+                    Selección actual:{" "}
+                    <strong>{anio ? `Año ${anio}` : "Todos los años"}</strong>,{" "}
                     <strong>{genero}</strong>
                   </span>
                 </div>
 
+                <div className="kpi-hero-grid">
+                  <KpiCard
+                    featured
+                    title="Monto total financiado en Oaxaca"
+                    value={formatMXN(kpis.monto_total_mxn, 2)}
+                    subtitle="Importe acumulado ejercido en pesos mexicanos"
+                    badgeText="Oaxaca"
+                    badgeTone="emerald"
+                  />
+                  <KpiCard
+                    featured
+                    title="Créditos ejercidos en Oaxaca"
+                    value={formatNum(kpis.total_creditos)}
+                    subtitle={`${formatNum(kpis.total_trabajadores)} trabajadores beneficiados en el periodo`}
+                    progressPct={Number(kpis.participacion_mujeres_pct) || 0}
+                    progressLabel="Distribución porcentual de mujeres y hombres en créditos"
+                    splitBar
+                    badgeText={`${formatPct(kpis.participacion_mujeres_pct, 1)} mujeres`}
+                    badgeTone="info"
+                  />
+                </div>
+
                 <div className="kpi-grid">
                   <KpiCard
-                    index={1}
-                    title="Créditos Ejercidos (Oaxaca)"
-                    value={formatNum(kpis.total_creditos)}
-                    subtitle={`${formatNum(kpis.total_trabajadores)} trabajadores beneficiados`}
+                    title="Ticket promedio por crédito"
+                    value={formatMXN(kpis.ticket_promedio_mxn, 2)}
+                    subtitle="Monto total entre total de créditos"
                   />
                   <KpiCard
-                    index={2}
-                    title="Monto Total Financiado"
-                    value={formatMXN(kpis.monto_total_mxn)}
-                    subtitle="Importe acumulado ejercido (MXN)"
-                  />
-                  <KpiCard
-                    index={3}
-                    title="Ticket Promedio por Crédito"
-                    value={formatMXN(kpis.ticket_promedio_mxn)}
-                    subtitle="Monto total / total de créditos"
-                  />
-                  <KpiCard
-                    index={4}
-                    title="Participación por Género"
+                    title="Participación por género"
                     value={`${formatPct(kpis.participacion_mujeres_pct, 1)} / ${formatPct(
                       kpis.participacion_hombres_pct,
                       1
                     )}`}
-                    subtitle="Mujeres vs. Hombres (% de créditos)"
+                    subtitle="Mujeres frente a hombres (% de créditos)"
                     progressPct={Number(kpis.participacion_mujeres_pct) || 0}
                     progressLabel="Porcentaje de participación de mujeres en créditos"
+                    splitBar
                   />
                   <KpiCard
-                    index={5}
-                    title="Brecha de Ticket por Género"
-                    value={brechaDisponible ? formatMXN(Math.abs(brechaVal)) : "N/A"}
+                    title="Brecha de ticket por género"
+                    value={brechaDisponible ? formatMXN(Math.abs(brechaVal), 2) : "N/A"}
                     subtitle={
                       brechaDisponible
-                        ? "Diferencia promedio Hombre vs. Mujer"
-                        : "Selecciona 'Todos' en género para comparar"
+                        ? "Diferencia promedio Hombre frente a Mujer"
+                        : "Selecciona Todos en género para comparar"
                     }
                     badgeText={brechaTexto}
                     badgeTone={!brechaDisponible || brechaVal === 0 ? "neutral" : "info"}
                   />
                   <KpiCard
-                    index={6}
-                    title="Crecimiento Periodo vs. Periodo"
+                    title="Crecimiento entre periodos"
                     value={formatPct(crecimientoVal)}
                     subtitle={kpis.crecimiento_detalle || "Variación trimestral en Oaxaca"}
                     badgeText={crecimientoLabel}
                     badgeTone={crecimientoTone}
                   />
                   <KpiCard
-                    index={7}
                     title="Participación Oaxaca / Nacional"
                     value={formatPct(kpis.participacion_oaxaca_nacional_pct)}
-                    subtitle="Peso sobre el importe total nacional"
+                    subtitle="Peso sobre el importe nacional ejercido"
                   />
                   <KpiCard
-                    index={8}
-                    title="Último Periodo Registrado"
+                    title="Último periodo registrado"
                     value={
                       ultimoPeriodo ? formatMXN(ultimoPeriodo.monto) : "Sin datos"
                     }
                     subtitle={
                       ultimoPeriodo
-                        ? `${formatPeriodo(ultimoPeriodo.periodo)} · ${formatNum(
+                        ? `${formatPeriodo(ultimoPeriodo.periodo)} (${formatNum(
                             ultimoPeriodo.creditos
-                          )} créditos`
+                          )} créditos)`
                         : "Sin serie temporal disponible"
                     }
                   />
@@ -331,11 +336,11 @@ export default function App() {
 
         <footer className="dashboard-footer">
           <p>
-            <strong>Horizonte Cooperativo — Oaxaca</strong> · Fuente:
-            datos.gob.mx (FONACOT).{" "}
+            <strong>Horizonte Cooperativo, Oaxaca</strong>. Fuente oficial:{" "}
+            datos.gob.mx (FONACOT 2025).{" "}
             {isDemoMode
               ? "Modo demostración activo con datos de ejemplo (sample_oaxaca_creditos.csv)."
-              : "Datos consultados desde la API REST FastAPI / PostgreSQL."}
+              : "Datos consultados en vivo desde FastAPI y PostgreSQL."}
           </p>
         </footer>
       </main>

@@ -13,17 +13,17 @@ export default function FilterBar({
   return (
     <header className="topbar">
       <div className="topbar-title-group">
-        <div className="topbar-eyebrow">
-          <span>CAJA DE AHORRO Y PRÉSTAMO · ENFOQUE OAXACA</span>
+        <div className="topbar-context">
+          <span className="context-tag">Oaxaca, ejercicio 2025</span>
           {isDemoMode && (
             <span className="badge badge-warning">
-              Datos de ejemplo (sin conexión a API)
+              Datos de ejemplo sin conexión a API
             </span>
           )}
         </div>
-        <h2>Dashboard Financiero — Créditos Ejercidos en Oaxaca</h2>
+        <h2>Créditos ejercidos por género en Oaxaca</h2>
         <p className="subtitle">
-          Monitoreo de colocación, ticket promedio, brecha de género y participación nacional.
+          Seguimiento gerencial de colocación, ticket promedio, brecha de género y peso frente al total nacional.
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export default function FilterBar({
         )}
 
         <div className="filter-status" aria-live="polite">
-          {loading && <span className="loading-pill">Actualizando datos...</span>}
+          {loading && <span className="loading-pill">Actualizando...</span>}
         </div>
       </form>
     </header>

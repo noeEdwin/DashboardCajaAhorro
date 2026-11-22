@@ -1,7 +1,6 @@
 import { percentBarWidth } from "../utils/metrics";
 
 export default function KpiCard({
-  index,
   title,
   value,
   subtitle,
@@ -9,21 +8,16 @@ export default function KpiCard({
   badgeTone = "neutral",
   progressPct,
   progressLabel,
+  featured = false,
+  splitBar = false,
 }) {
   const clampedPct =
-    typeof progressPct === "number"
-      ? percentBarWidth(progressPct)
-      : null;
+    typeof progressPct === "number" ? percentBarWidth(progressPct) : null;
 
   return (
-    <article className="kpi-card">
+    <article className={`kpi-card ${featured ? "kpi-card--featured" : ""}`}>
       <div className="kpi-header">
-        <span className="kpi-label">
-          <span className="kpi-index" aria-hidden="true">
-            {index}.
-          </span>{" "}
-          {title}
-        </span>
+        <span className="kpi-label">{title}</span>
         {badgeText && (
           <span className={`kpi-badge kpi-badge--${badgeTone}`}>
             {badgeText}
@@ -31,11 +25,13 @@ export default function KpiCard({
         )}
       </div>
 
-      <strong className="kpi-value">{value}</strong>
+      <strong className={`kpi-value ${featured ? "kpi-value--featured" : ""}`}>
+        {value}
+      </strong>
 
       {clampedPct !== null && (
         <div
-          className="kpi-progress-track"
+          className={`kpi-progress-track ${splitBar ? "kpi-progress-track--split" : ""}`}
           role="progressbar"
           aria-valuenow={Math.round(clampedPct)}
           aria-valuemin={0}
