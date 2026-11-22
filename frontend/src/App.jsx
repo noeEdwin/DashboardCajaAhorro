@@ -66,6 +66,7 @@ export default function App() {
       })
       .catch((err) => {
         if (err.name === "AbortError") return;
+        setFiltros({ anios: [], generos: [] });
         setError(`No se pudo conectar con la API en ${API_URL}`);
       });
 
@@ -90,6 +91,7 @@ export default function App() {
     const qs = params.toString() ? `?${params.toString()}` : "";
 
     setLoading(true);
+    setError("");
 
     Promise.all([
       fetch(`${API_URL}/api/kpis${qs}`, { signal: controller.signal }).then((r) => {
@@ -117,6 +119,9 @@ export default function App() {
       })
       .catch((err) => {
         if (err.name === "AbortError") return;
+        setKpis(null);
+        setPorGenero([]);
+        setTendencia([]);
         setError("Error al cargar métricas desde FastAPI.");
       })
       .finally(() => {
@@ -211,7 +216,7 @@ export default function App() {
           isDemoMode={isDemoMode}
         />
 
-        {loading && !kpis ? (
+        {loading ? (
           <LoadingSkeleton />
         ) : isEmpty ? (
           <EmptyState

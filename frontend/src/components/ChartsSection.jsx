@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import { formatMXN, formatNum, formatPct, formatPeriodo } from "../utils/formatters";
+import { percentBarWidth } from "../utils/metrics";
 
 const COLOR_MUJER = "#be185d";
 const COLOR_HOMBRE = "#1d4ed8";
@@ -92,6 +93,7 @@ export default function ChartsSection({
         );
 
   const oaxacaPct = kpis ? Number(kpis.participacion_oaxaca_nacional_pct) || 0 : 0;
+  const shareWidth = percentBarWidth(oaxacaPct);
 
   return (
     <section className="charts-section" aria-label="Visualizaciones y gráficas financieras">
@@ -263,14 +265,14 @@ export default function ChartsSection({
               <div
                 className="kpi-progress-track"
                 role="progressbar"
-                aria-valuenow={Math.round(oaxacaPct)}
+                 aria-valuenow={shareWidth}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label="Participación de Oaxaca respecto al total nacional"
               >
                 <div
                   className="kpi-progress-fill kpi-progress-fill--teal"
-                  style={{ width: `${Math.min(100, Math.max(oaxacaPct * 4, oaxacaPct > 0 ? 4 : 0))}%` }}
+                   style={{ width: `${shareWidth}%` }}
                 />
               </div>
               <p className="national-share-note">

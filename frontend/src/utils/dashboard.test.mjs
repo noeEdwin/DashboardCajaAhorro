@@ -7,6 +7,7 @@ import {
   formatPeriodo,
 } from "./formatters.js";
 import { getSampleDashboardData } from "../data/sampleDemoData.js";
+import { percentBarWidth } from "./metrics.js";
 
 test("formatMXN formats currency in es-MX without NaN", () => {
   const out = formatMXN(24150000);
@@ -45,4 +46,12 @@ test("getSampleDashboardData computes all KPIs and applies anio and genero filte
       (r) => r.anio === 2026 && r.genero === "Mujer"
     )
   );
+});
+
+test("la barra nacional representa exactamente el porcentaje indicado", () => {
+  const porcentaje = getSampleDashboardData("2025", "Todos").kpis.participacion_oaxaca_nacional_pct;
+  assert.equal(percentBarWidth(porcentaje), porcentaje);
+  assert.equal(percentBarWidth(-5), 0);
+  assert.equal(percentBarWidth(125), 100);
+  assert.equal(percentBarWidth(undefined), 0);
 });
