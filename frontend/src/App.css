@@ -690,6 +690,34 @@ h3 {
   );
 }
 
+.legend-pill--otro .legend-swatch {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent-emerald),
+    var(--accent-emerald) 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+.chart-data {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.chart-data summary {
+  cursor: pointer;
+  width: fit-content;
+  font-weight: 600;
+  color: var(--accent-emerald);
+  padding: 4px 0;
+}
+
+.chart-data-scroll {
+  margin-top: 10px;
+}
+
 /* Tooltips accesibles */
 .custom-tooltip {
   background: var(--ink-forest);

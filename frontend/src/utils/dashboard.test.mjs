@@ -7,13 +7,14 @@ import {
   formatPeriodo,
 } from "./formatters.js";
 import { getSampleDashboardData } from "../data/sampleDemoData.js";
-import { percentBarWidth } from "./metrics.js";
+import { lastPeriodSummary, percentBarWidth, trendGenders } from "./metrics.js";
 
 test("formatMXN formats currency in es-MX without NaN", () => {
   const out = formatMXN(24150000);
   assert.match(out, /24,150,000/);
   assert.ok(out.includes("$"));
   assert.equal(formatMXN(undefined), "$0");
+  assert.equal(formatMXN(1234.5, 2), "$1,234.50");
 });
 
 test("formatNum and formatPct format numbers and percentages cleanly", () => {
@@ -54,4 +55,31 @@ test("la barra nacional representa exactamente el porcentaje indicado", () => {
   assert.equal(percentBarWidth(-5), 0);
   assert.equal(percentBarWidth(125), 100);
   assert.equal(percentBarWidth(undefined), 0);
+});
+
+test("trendGenders y lastPeriodSummary incluyen otros géneros y respetan el filtro", () => {
+  const tendencia = [
+    { periodo: "2025-11", Mujer: 10, Mujer_creditos: 1 },
+    {
+      periodo: "2025-12",
+      Mujer: 20,
+      Mujer_creditos: 2,
+      Hombre: 30,
+      Hombre_creditos: 3,
+      "No especificado": 40,
+      "No especificado_creditos": 4,
+    },
+  ];
+  assert.deepEqual(trendGenders(tendencia), ["Mujer", "Hombre", "No especificado"]);
+  assert.deepEqual(lastPeriodSummary(tendencia, "No especificado"), {
+    periodo: "2025-12",
+    monto: 40,
+    creditos: 4,
+  });
+  assert.deepEqual(lastPeriodSummary(tendencia, "Todos"), {
+    periodo: "2025-12",
+    monto: 90,
+    creditos: 9,
+  });
+  assert.equal(lastPeriodSummary([], "Todos"), null);
 });

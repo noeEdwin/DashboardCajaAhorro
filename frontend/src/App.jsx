@@ -10,20 +10,18 @@ import {
 } from "./components/StateFeedback";
 import { getSampleDashboardData, SAMPLE_FILTROS } from "./data/sampleDemoData";
 import { formatMXN, formatNum, formatPct, formatPeriodo } from "./utils/formatters";
+import { lastPeriodSummary } from "./utils/metrics";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function buildTendenciaSeries(rows) {
   const byPeriod = {};
   (rows || []).forEach((row) => {
+    // Sólo se crean claves para los géneros que devuelve la API: así un filtro
+    // por género no dibuja series en cero y se conservan otros géneros
+    // (p. ej. «No especificado») si llegan desde el ETL.
     if (!byPeriod[row.periodo]) {
-      byPeriod[row.periodo] = {
-        periodo: row.periodo,
-        Mujer: 0,
-        Hombre: 0,
-        Mujer_creditos: 0,
-        Hombre_creditos: 0,
-      };
+      byPeriod[row.periodo] = { periodo: row.periodo };
     }
     byPeriod[row.periodo][row.genero] = Number(row.monto_mxn) || 0;
     byPeriod[row.periodo][`${row.genero}_creditos`] = Number(row.creditos) || 0;
@@ -147,21 +145,10 @@ export default function App() {
     setError("");
   }, []);
 
-  const ultimoPeriodo = useMemo(() => {
-    if (!tendencia.length) return null;
-    const last = tendencia[tendencia.length - 1];
-    const totalMonto =
-      (genero === "Hombre" ? 0 : Number(last.Mujer) || 0) +
-      (genero === "Mujer" ? 0 : Number(last.Hombre) || 0);
-    const totalCreditos =
-      (genero === "Hombre" ? 0 : Number(last.Mujer_creditos) || 0) +
-      (genero === "Mujer" ? 0 : Number(last.Hombre_creditos) || 0);
-    return {
-      periodo: last.periodo,
-      monto: totalMonto,
-      creditos: totalCreditos,
-    };
-  }, [tendencia, genero]);
+  const ultimoPeriodo = useMemo(
+    () => lastPeriodSummary(tendencia, genero),
+    [tendencia, genero]
+  );
 
   const isEmpty =
     !loading &&
