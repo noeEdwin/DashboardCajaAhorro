@@ -66,7 +66,7 @@ uvicorn backend.app.main:app --reload --port 8000
 ```
 Documentación interactiva disponible en `http://localhost:8000/docs`.
 
-### 4. LevantarFrontend (React + Vite)
+### 4. Levantar el Frontend (React + Vite)
 ```bash
 cd frontend
 npm install
