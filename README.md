@@ -13,25 +13,18 @@
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-![Datos](https://img.shields.io/badge/datos-FONACOT%202025-0D2B26?style=flat-square&labelColor=123F37)
-![KPIs](https://img.shields.io/badge/KPIs-8-3DDC97?style=flat-square&labelColor=123F37)
-![Conciliación](https://img.shields.io/badge/conciliaci%C3%B3n-9%2F9-3DDC97?style=flat-square&labelColor=123F37)
-![E2E](https://img.shields.io/badge/E2E-178%2F178-3DDC97?style=flat-square&labelColor=123F37)
-![Unitarias](https://img.shields.io/badge/unitarias-5%2F5-3DDC97?style=flat-square&labelColor=123F37)
-![Entrega](https://img.shields.io/badge/entrega-27%20nov%202026-A21C58?style=flat-square&labelColor=123F37)
-
-<br>
-
-<a href="#instalación-rápida"><img src="https://img.shields.io/badge/Empezar-Instalación_rápida-3DDC97?style=for-the-badge&labelColor=0D2B26" alt="Instalación rápida"></a>
-<a href="#documentación-técnica"><img src="https://img.shields.io/badge/Leer-Documentación_técnica-8FB8FF?style=for-the-badge&labelColor=0D2B26" alt="Documentación técnica"></a>
-<a href="#api-rest"><img src="https://img.shields.io/badge/Consultar-API_REST-7CE0D3?style=for-the-badge&labelColor=0D2B26" alt="API REST"></a>
-<a href="https://github.com/users/noeEdwin/projects/6"><img src="https://img.shields.io/badge/Ver-Tablero_del_sprint-F5A3C4?style=for-the-badge&labelColor=0D2B26" alt="Tablero del sprint"></a>
+<img src="docs/assets/ui/stats.svg" alt="Datos FONACOT 2025, 8 KPIs, conciliación 9/9, E2E 178/178, unitarias 5/5, entrega 27 de noviembre de 2026" height="34">
 
 <br><br>
 
-<img src="docs/evidencias/dashboard-escritorio-vista-inicial.png" alt="Vista general del dashboard Horizonte Cooperativo con las tarjetas de KPIs y gráficas" width="100%">
+<a href="#instalacion-rapida"><img src="docs/assets/ui/nav-instalacion.svg" alt="Instalación rápida" height="44"></a>&nbsp;
+<a href="#documentacion-tecnica"><img src="docs/assets/ui/nav-tecnica.svg" alt="Documentación técnica" height="44"></a>&nbsp;
+<a href="#api-rest"><img src="docs/assets/ui/nav-api.svg" alt="API REST" height="44"></a>&nbsp;
+<a href="https://github.com/users/noeEdwin/projects/6"><img src="docs/assets/ui/nav-tablero.svg" alt="Tablero del sprint" height="44"></a>
 
-<sub>Vista del dashboard con los datos oficiales de FONACOT 2025 (1920 × 1080).</sub>
+<br><br>
+
+<img src="docs/assets/capturas/mockup.png" alt="Dashboard Horizonte Cooperativo en escritorio y en móvil con los datos oficiales de FONACOT 2025" width="100%">
 
 </div>
 
@@ -41,33 +34,35 @@
 <summary><strong>Tabla de contenidos</strong></summary>
 
 1. [Acerca del proyecto](#acerca-del-proyecto)
-2. [Características](#características)
+2. [Características](#caracteristicas)
 3. [Arquitectura](#arquitectura)
 4. [Stack y dependencias](#stack-y-dependencias)
-5. [Instalación rápida](#instalación-rápida)
-6. [Instalación detallada](#instalación-detallada)
-7. [Documentación técnica](#documentación-técnica)
+5. [Instalación rápida](#instalacion-rapida)
+6. [Instalación detallada](#instalacion-detallada)
+7. [Documentación técnica](#documentacion-tecnica)
    - [Proceso ETL](#proceso-etl)
    - [Base de datos](#base-de-datos)
    - [Backend](#backend)
    - [Frontend](#frontend)
-   - [Decisiones técnicas](#decisiones-técnicas)
+   - [Decisiones técnicas](#decisiones-tecnicas)
    - [Seguridad](#seguridad)
 8. [KPIs](#kpis)
 9. [API REST](#api-rest)
-10. [Validación y pruebas](#validación-y-pruebas)
+10. [Validación y pruebas](#validacion-y-pruebas)
 11. [Capturas](#capturas)
 12. [Estructura del repositorio](#estructura-del-repositorio)
 13. [Alcance y limitaciones](#alcance-y-limitaciones)
 14. [Equipo](#equipo)
-15. [Cómo contribuir](#cómo-contribuir)
+15. [Cómo contribuir](#como-contribuir)
 16. [Referencias](#referencias)
 
 </details>
 
 ---
 
-## Acerca del proyecto
+<a id="acerca-del-proyecto"></a>
+
+<img src="docs/assets/ui/h-acerca-del-proyecto.svg" alt="Acerca del proyecto" width="100%">
 
 Una caja de ahorro y préstamo en Oaxaca necesita saber cómo se mueve el crédito al consumo en el estado. El Instituto FONACOT publica esa información como datos abiertos, pero repartida en **8 CSV** (créditos e importes por trimestre), con una columna por mes y género, sin año ni total nacional, y con nombres de estados que cambian entre archivos.
 
@@ -96,7 +91,8 @@ Una caja de ahorro y préstamo en Oaxaca necesita saber cómo se mueve el crédi
   </tr>
 </table>
 
-> [!NOTE]
+> <img src="docs/assets/ui/nota.svg" alt="Nota" height="30">
+>
 > **Pregunta de negocio:** ¿cómo se comportó en 2025 el crédito FONACOT en Oaxaca por trimestre y por género, y qué peso tiene el estado dentro del total nacional?
 
 | | |
@@ -110,7 +106,9 @@ Una caja de ahorro y préstamo en Oaxaca necesita saber cómo se mueve el crédi
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Características
+<a id="caracteristicas"></a>
+
+<img src="docs/assets/ui/h-caracteristicas.svg" alt="Características" width="100%">
 
 <table>
   <tr>
@@ -132,7 +130,9 @@ Una caja de ahorro y préstamo en Oaxaca necesita saber cómo se mueve el crédi
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Arquitectura
+<a id="arquitectura"></a>
+
+<img src="docs/assets/ui/h-arquitectura.svg" alt="Arquitectura" width="100%">
 
 Arquitectura desacoplada en tres capas: datos (ETL + PostgreSQL), servicios (API REST) y presentación (SPA en React).
 
@@ -173,7 +173,9 @@ sequenceDiagram
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Stack y dependencias
+<a id="stack-y-dependencias"></a>
+
+<img src="docs/assets/ui/h-stack-y-dependencias.svg" alt="Stack y dependencias" width="100%">
 
 | Capa | Tecnología | Versión | Dependencias principales |
 |---|---|---|---|
@@ -191,9 +193,12 @@ sequenceDiagram
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Instalación rápida
+<a id="instalacion-rapida"></a>
 
-> [!IMPORTANT]
+<img src="docs/assets/ui/h-instalacion-rapida.svg" alt="Instalación rápida" width="100%">
+
+> <img src="docs/assets/ui/importante.svg" alt="Importante" height="30">
+>
 > Necesitas **Docker Desktop**, **Python 3.9+**, **Node.js 18+** y **Git**. Ejecuta los comandos desde la raíz del repositorio.
 
 ```bash
@@ -229,7 +234,9 @@ Resumen Oaxaca cargado: 24,048 créditos | $675,334,814.51 MXN
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Instalación detallada
+<a id="instalacion-detallada"></a>
+
+<img src="docs/assets/ui/h-instalacion-detallada.svg" alt="Instalación detallada" width="100%">
 
 <details>
 <summary><strong>1. Variables de entorno</strong></summary>
@@ -246,7 +253,8 @@ Copia `.env.example` a `.env`. Los valores de ejemplo funcionan en local:
 
 El ETL y el backend leen `.env` con `python-dotenv`. Si `DATABASE_URL` no existe, usan el valor por defecto de la tabla.
 
-> [!WARNING]
+> <img src="docs/assets/ui/advertencia.svg" alt="Advertencia" height="30">
+>
 > El archivo `.env` está en `.gitignore`. No lo subas al repositorio.
 
 </details>
@@ -338,9 +346,13 @@ npm run preview      # vista previa de la compilación
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Documentación técnica
+<a id="documentacion-tecnica"></a>
 
-### Proceso ETL
+<img src="docs/assets/ui/h-documentacion-tecnica.svg" alt="Documentación técnica" width="100%">
+
+<a id="proceso-etl"></a>
+
+<img src="docs/assets/ui/h3-proceso-etl.svg" alt="Proceso ETL" width="100%">
 
 Archivo: [`etl/extract_transform_load.py`](etl/extract_transform_load.py)
 
@@ -384,7 +396,9 @@ El archivo de "trabajadores" se usa como número de créditos (`numero_creditos 
 - Inserta en lote con `INSERT ... ON CONFLICT (anio, mes, entidad_federativa, genero, fuente) DO UPDATE`, así que correr el ETL dos veces no duplica registros.
 - Registra la corrida en `etl_ejecuciones`. Con los datos de 2025: **264** filas leídas (8 archivos × 33 filas), **24** registros de Oaxaca (12 meses × 2 géneros) y **48** registros cargados (Oaxaca + Nacional).
 
-### Base de datos
+<a id="base-de-datos"></a>
+
+<img src="docs/assets/ui/h3-base-de-datos.svg" alt="Base de datos" width="100%">
 
 Archivo: [`database/schema.sql`](database/schema.sql)
 
@@ -424,7 +438,9 @@ erDiagram
 | Tipo `NUMERIC(16,2)` | Importes en pesos | Precisión exacta, sin errores de punto flotante |
 | Restricciones `CHECK` | Mes entre 1 y 12, conteos e importes ≥ 0 | La base rechaza datos imposibles |
 
-### Backend
+<a id="backend"></a>
+
+<img src="docs/assets/ui/h3-backend.svg" alt="Backend" width="100%">
 
 Archivos: [`backend/app/main.py`](backend/app/main.py) y [`backend/app/db.py`](backend/app/db.py)
 
@@ -438,7 +454,9 @@ Archivos: [`backend/app/main.py`](backend/app/main.py) y [`backend/app/db.py`](b
 - **CORS** abierto (`allow_origins=["*"]`) para que el frontend en el puerto 5173 pueda consultar la API en el 8000.
 - Metadatos de OpenAPI: título *Horizonte Cooperativo API - Oaxaca*, versión `1.1.0`.
 
-### Frontend
+<a id="frontend"></a>
+
+<img src="docs/assets/ui/h3-frontend.svg" alt="Frontend" width="100%">
 
 Carpeta: [`frontend/src/`](frontend/src/)
 
@@ -465,7 +483,9 @@ Flujo de datos en `App.jsx`:
 
 La URL de la API se toma de `VITE_API_URL` y, si no existe, usa `http://localhost:8000`.
 
-### Decisiones técnicas
+<a id="decisiones-tecnicas"></a>
+
+<img src="docs/assets/ui/h3-decisiones-tecnicas.svg" alt="Decisiones técnicas" width="100%">
 
 | Decisión | Alternativa descartada | Motivo |
 |---|---|---|
@@ -477,7 +497,9 @@ La URL de la API se toma de `VITE_API_URL` y, si no existe, usa `http://localhos
 | Crecimiento trimestral | Crecimiento anual | Solo hay datos de 2025 |
 | `NUMERIC(16,2)` para importes | `FLOAT` | Precisión exacta en dinero |
 
-### Seguridad
+<a id="seguridad"></a>
+
+<img src="docs/assets/ui/h3-seguridad.svg" alt="Seguridad" width="100%">
 
 - Las consultas usan **parámetros enlazados** de SQLAlchemy; los valores del usuario nunca se concatenan al SQL.
 - Las credenciales viven en `.env`, que está fuera del control de versiones.
@@ -486,7 +508,9 @@ La URL de la API se toma de `VITE_API_URL` y, si no existe, usa `http://localhos
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## KPIs
+<a id="kpis"></a>
+
+<img src="docs/assets/ui/h-kpis.svg" alt="KPIs" width="100%">
 
 Todos se calculan sobre Oaxaca y respetan los filtros de **Año** y **Género**. Valores de 2025 sin filtros:
 
@@ -520,7 +544,8 @@ Todos se calculan sobre Oaxaca y respetan los filtros de **Año** y **Género**.
 
 </details>
 
-> [!TIP]
+> <img src="docs/assets/ui/consejo.svg" alt="Consejo" height="30">
+>
 > **Reglas de cálculo**
 > - El KPI 1 cuenta **créditos**, no personas únicas, como lo define el diccionario de datos de FONACOT.
 > - El KPI 5 devuelve `null` y se muestra como **N/A** cuando se filtra un solo género.
@@ -529,7 +554,9 @@ Todos se calculan sobre Oaxaca y respetan los filtros de **Año** y **Género**.
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## API REST
+<a id="api-rest"></a>
+
+<img src="docs/assets/ui/h-api-rest.svg" alt="API REST" width="100%">
 
 Base: `http://localhost:8000` · Swagger: `http://localhost:8000/docs` · Esquema OpenAPI: `http://localhost:8000/openapi.json`
 
@@ -582,7 +609,9 @@ GET /api/comparativa-nacional -> {"oaxaca": {"creditos", "monto_mxn", "ticket_pr
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Validación y pruebas
+<a id="validacion-y-pruebas"></a>
+
+<img src="docs/assets/ui/h-validacion-y-pruebas.svg" alt="Validación y pruebas" width="100%">
 
 Cada cifra se rastreó por toda la cadena:
 
@@ -670,56 +699,65 @@ El detalle de la validación está en [`docs/aportacion-miguel-dashboard.md`](do
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Capturas
+<a id="capturas"></a>
+
+<img src="docs/assets/ui/h-capturas.svg" alt="Capturas" width="100%">
+
+Capturas reales del sistema con los datos oficiales de FONACOT 2025. Los originales sin marco están en [`docs/evidencias/`](docs/evidencias/).
 
 <table>
   <tr>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/dashboard-3-graficas-y-tabla.png" alt="Gráficas de tendencia, monto y ticket por género con la tabla operativa"><br>
-      <sub><b>Gráficas y tabla operativa por género</b></sub>
+    <td width="50%" valign="top">
+      <img src="docs/assets/capturas/graficas-y-tabla.png" alt="Gráficas y tabla operativa" width="100%">
+      <p><b>Gráficas y tabla operativa</b><br><sub>Tendencia mensual, monto y ticket por género, con la tabla de detalle para cotejar cifras.</sub></p>
     </td>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/dashboard-filtro-2025-mujer.png" alt="Dashboard filtrado por año 2025 y género Mujer"><br>
-      <sub><b>Filtro Año = 2025 y Género = Mujer</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/dashboard-tabla-accesible-tendencia.png" alt="Tabla accesible desplegada bajo la gráfica de tendencia"><br>
-      <sub><b>Tabla alternativa accesible</b></sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/dashboard-estado-error-api.png" alt="Estado de error cuando la API no está disponible"><br>
-      <sub><b>Estado de error con reintento</b></sub>
+    <td width="50%" valign="top">
+      <img src="docs/assets/capturas/filtro-2025-mujer.png" alt="Filtro Año = 2025 y Género = Mujer" width="100%">
+      <p><b>Filtro Año = 2025 y Género = Mujer</b><br><sub>Las tarjetas se recalculan y la brecha de ticket aparece como N/A, porque requiere ambos géneros.</sub></p>
     </td>
   </tr>
   <tr>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/backend-swagger-docs.png" alt="Documentación Swagger de la API FastAPI"><br>
-      <sub><b>Swagger de la API</b></sub>
+    <td width="50%" valign="top">
+      <img src="docs/assets/capturas/tabla-accesible.png" alt="Tabla alternativa accesible" width="100%">
+      <p><b>Tabla alternativa accesible</b><br><sub>Cada gráfica incluye una tabla desplegable con los mismos datos para lectores de pantalla.</sub></p>
     </td>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/etl-consola-fonacot-2025.png" alt="Consola con la ejecución del ETL y verificación en PostgreSQL"><br>
-      <sub><b>Ejecución del ETL</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/dashboard-movil-menu-abierto.png" alt="Vista móvil con el menú lateral abierto" width="45%"><br>
-      <sub><b>Vista móvil (390×844)</b></sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="docs/evidencias/dashboard-tooltip-tendencia.png" alt="Tooltip de la gráfica de tendencia mensual"><br>
-      <sub><b>Detalle al pasar el cursor</b></sub>
+    <td width="50%" valign="top">
+      <img src="docs/assets/capturas/estado-error-api.png" alt="Estado de error con reintento" width="100%">
+      <p><b>Estado de error con reintento</b><br><sub>Si la API no responde, se borran los datos anteriores y se ofrece reintentar o ver el modo demostración.</sub></p>
     </td>
   </tr>
 </table>
 
-Todas las capturas están en [`docs/evidencias/`](docs/evidencias/).
+<table>
+  <tr>
+    <td width="45%" valign="top" align="center">
+      <img src="docs/assets/capturas/movil.png" alt="Vista móvil del dashboard y menú lateral abierto" width="100%">
+      <p><b>Vista móvil (390 × 844)</b><br><sub>El menú lateral se convierte en un botón accesible con <code>aria-expanded</code>.</sub></p>
+    </td>
+    <td width="55%" valign="top">
+      <img src="docs/assets/capturas/tooltip-tendencia.png" alt="Detalle al pasar el cursor sobre la gráfica de tendencia" width="100%">
+      <p><b>Detalle al pasar el cursor</b><br><sub>Muestra importe en MXN y créditos de cada mes y género.</sub></p>
+      <br>
+      <img src="docs/assets/capturas/swagger.png" alt="Documentación Swagger de la API FastAPI" width="100%">
+      <p><b>Swagger de la API</b><br><sub>Documentación interactiva de los 6 endpoints en <code>/docs</code>.</sub></p>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td valign="top">
+      <img src="docs/assets/capturas/etl-consola.png" alt="Consola con la ejecución del ETL y verificación en PostgreSQL" width="100%">
+      <p><b>Ejecución del ETL</b><br><sub>Carga de los 8 CSV oficiales y verificación de los registros en PostgreSQL.</sub></p>
+    </td>
+  </tr>
+</table>
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Estructura del repositorio
+<a id="estructura-del-repositorio"></a>
+
+<img src="docs/assets/ui/h-estructura-del-repositorio.svg" alt="Estructura del repositorio" width="100%">
 
 ```
 DashboardCajaAhorro/
@@ -752,9 +790,12 @@ DashboardCajaAhorro/
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Alcance y limitaciones
+<a id="alcance-y-limitaciones"></a>
 
-> [!CAUTION]
+<img src="docs/assets/ui/h-alcance-y-limitaciones.svg" alt="Alcance y limitaciones" width="100%">
+
+> <img src="docs/assets/ui/precaucion.svg" alt="Precaución" height="30">
+>
 > Las cifras son una **referencia del mercado FONACOT**, no los créditos internos de una caja de ahorro.
 
 - Solo hay datos de **2025**, por trimestre; el crecimiento se mide trimestre contra trimestre.
@@ -765,7 +806,9 @@ DashboardCajaAhorro/
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Equipo
+<a id="equipo"></a>
+
+<img src="docs/assets/ui/h-equipo.svg" alt="Equipo" width="100%">
 
 <div align="center">
 <table>
@@ -786,19 +829,24 @@ Docente: <b>Hernández Luis Moisés Adrián</b>
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Cómo contribuir
+<a id="como-contribuir"></a>
+
+<img src="docs/assets/ui/h-como-contribuir.svg" alt="Cómo contribuir" width="100%">
 
 1. Actualiza `main` (Fetch y Pull).
 2. Crea una rama desde `main` con prefijo según el tipo de cambio: `feat/…`, `fix/…`, `docs/…` o `qa/…`.
 3. Haz commits pequeños con mensajes descriptivos, por ejemplo `fix(frontend): …` o `docs(readme): …`.
 4. Abre un Pull Request hacia `main` e indica el issue relacionado (`Refs #N`).
 
-> [!NOTE]
+> <img src="docs/assets/ui/nota.svg" alt="Nota" height="30">
+>
 > Nadie trabaja directamente en `main`. El seguimiento está en el [tablero del sprint](https://github.com/users/noeEdwin/projects/6).
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## Referencias
+<a id="referencias"></a>
+
+<img src="docs/assets/ui/h-referencias.svg" alt="Referencias" width="100%">
 
 - Instituto FONACOT. *Trabajadores con crédito ejercido por género y entidad federativa* [conjunto de datos]. [datos.gob.mx](https://www.datos.gob.mx/dataset/trabajadores_credito_ejercido_genero_entidad_federativa)
 - Instituto FONACOT. *Importe de créditos ejercidos por género y entidad federativa* [conjunto de datos]. [datos.gob.mx](https://www.datos.gob.mx/dataset/importe_creditos_ejercidos_genero_entidad-federativa)
